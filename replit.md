@@ -6,6 +6,16 @@ calcula.Ai is a Progressive Web App (PWA) for personal financial management with
 
 The application is designed as a fully offline-capable PWA that can be installed on devices and function without internet connectivity. All data is stored locally using IndexedDB, ensuring privacy and immediate access to financial information.
 
+## Recent Changes
+
+**November 5, 2025 - Initial Replit Setup**
+- Successfully imported project from GitHub
+- Installed all npm dependencies (741 packages)
+- Configured development workflow to run on port 5000
+- Set up deployment configuration for autoscale deployment
+- Verified frontend is working correctly with Brazilian Portuguese localization
+- Note: PostgreSQL database not provisioned as app primarily uses IndexedDB for client-side storage
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
