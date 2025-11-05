@@ -22,11 +22,15 @@ import BalanceLine from '@/components/Charts/BalanceLine';
 import InstallPrompt from '@/components/InstallPrompt';
 import FileTransfer from '@/components/FileTransfer';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { SplashScreen } from '@/components/SplashScreen';
+import { ChatPage } from '@/components/ChatPage';
+import { Home, MessageSquare } from 'lucide-react';
 
 function FinanceApp() {
   const { toast } = useToast();
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showBudgets, setShowBudgets] = useState(false);
+  const [currentTab, setCurrentTab] = useState<'home' | 'chat'>('home');
 
   const {
     transactions,
@@ -208,76 +212,116 @@ function FinanceApp() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b bg-card sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2 sm:gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold">calcula.Ai</h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {formatMonthYear(filters.month)}
+              {currentTab === 'home' ? formatMonthYear(filters.month) : 'Chat Financeiro'}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <FileTransfer onExport={exportData} onImport={handleImport} />
-            <Button onClick={() => setShowBudgets(!showBudgets)} variant="outline" size="sm" data-testid="button-budgets">
-              <span className="hidden sm:inline">Orçamentos</span>
-              <span className="sm:hidden">$</span>
-            </Button>
-            <Button onClick={() => setShowTransactionForm(true)} size="sm" data-testid="button-new-transaction">
-              <Plus className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Nova</span>
-            </Button>
+          {currentTab === 'home' && (
+            <div className="flex items-center gap-2">
+              <FileTransfer onExport={exportData} onImport={handleImport} />
+              <Button onClick={() => setShowBudgets(!showBudgets)} variant="outline" size="sm" data-testid="button-budgets">
+                <span className="hidden sm:inline">Orçamentos</span>
+                <span className="sm:hidden">$</span>
+              </Button>
+              <Button onClick={() => setShowTransactionForm(true)} size="sm" data-testid="button-new-transaction">
+                <Plus className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Nova</span>
+              </Button>
+              <ThemeToggle />
+            </div>
+          )}
+          {currentTab === 'chat' && (
             <ThemeToggle />
-          </div>
+          )}
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        <DashboardCards income={stats.income} expense={stats.expense} balance={stats.balance} />
+      <main className="flex-1 overflow-hidden">
+        {currentTab === 'home' ? (
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-20">
+            <DashboardCards income={stats.income} expense={stats.expense} balance={stats.balance} />
 
-        <Filters
-          availableMonths={availableMonths}
-          categories={categories}
-          selectedMonth={filters.month}
-          selectedType={filters.type}
-          selectedCategory={filters.category}
-          searchText={filters.search}
-          onMonthChange={(month) => setFilters({ month })}
-          onTypeChange={(type) => setFilters({ type })}
-          onCategoryChange={(category) => setFilters({ category })}
-          onSearchChange={(search) => setFilters({ search })}
-        />
+            <Filters
+              availableMonths={availableMonths}
+              categories={categories}
+              selectedMonth={filters.month}
+              selectedType={filters.type}
+              selectedCategory={filters.category}
+              searchText={filters.search}
+              onMonthChange={(month) => setFilters({ month })}
+              onTypeChange={(type) => setFilters({ type })}
+              onCategoryChange={(category) => setFilters({ category })}
+              onSearchChange={(search) => setFilters({ search })}
+            />
 
-        {showBudgets ? (
-          <BudgetPanel
-            categories={categories}
-            budgets={budgets}
-            expensesByCategory={expensesByCategory}
-            onSetBudget={setBudget}
-            onDeleteBudget={deleteBudget}
-          />
+            {showBudgets ? (
+              <BudgetPanel
+                categories={categories}
+                budgets={budgets}
+                expensesByCategory={expensesByCategory}
+                onSetBudget={setBudget}
+                onDeleteBudget={deleteBudget}
+              />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <ExpensesPie data={pieData} />
+                  <BalanceLine data={balanceData} />
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-semibold mb-4">Transações</h2>
+                  {isLoading ? (
+                    <div className="text-center py-12 text-muted-foreground">Carregando...</div>
+                  ) : (
+                    <TransactionsTable
+                      transactions={filteredTransactions}
+                      categories={categories}
+                      onDelete={handleDeleteTransaction}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ExpensesPie data={pieData} />
-              <BalanceLine data={balanceData} />
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold mb-4">Transações</h2>
-              {isLoading ? (
-                <div className="text-center py-12 text-muted-foreground">Carregando...</div>
-              ) : (
-                <TransactionsTable
-                  transactions={filteredTransactions}
-                  categories={categories}
-                  onDelete={handleDeleteTransaction}
-                />
-              )}
-            </div>
-          </>
+          <div className="h-full pb-16">
+            <ChatPage />
+          </div>
         )}
       </main>
+
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t z-50">
+        <div className="max-w-7xl mx-auto px-4 py-2 flex justify-around">
+          <button
+            onClick={() => setCurrentTab('home')}
+            className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors ${
+              currentTab === 'home' 
+                ? 'text-primary bg-primary/10' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-xs font-medium">Inicial</span>
+          </button>
+          <button
+            onClick={() => setCurrentTab('chat')}
+            className={`flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors ${
+              currentTab === 'chat' 
+                ? 'text-primary bg-primary/10' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <MessageSquare className="w-5 h-5" />
+            <span className="text-xs font-medium">Chat</span>
+          </button>
+        </div>
+      </nav>
 
       <Dialog open={showTransactionForm} onOpenChange={setShowTransactionForm}>
         <DialogContent>
