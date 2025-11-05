@@ -1,8 +1,8 @@
-# Seu Finanças PWA
+# calcula.Ai PWA
 
 ## Overview
 
-Seu Finanças is a Progressive Web App (PWA) for personal financial management with complete offline functionality. The application enables users to track income and expenses, manage budgets, and visualize financial data through interactive charts. Built with a focus on Brazilian localization (pt-BR), it provides date formatting (dd/mm/yyyy) and currency display (R$) tailored for Brazilian users.
+calcula.Ai is a Progressive Web App (PWA) for personal financial management with complete offline functionality. The application enables users to track income and expenses, manage budgets, and visualize financial data through interactive charts. Built with a focus on Brazilian localization (pt-BR), it provides date formatting (dd/mm/yyyy) and currency display (R$) tailored for Brazilian users.
 
 The application is designed as a fully offline-capable PWA that can be installed on devices and function without internet connectivity. All data is stored locally using IndexedDB, ensuring privacy and immediate access to financial information.
 
