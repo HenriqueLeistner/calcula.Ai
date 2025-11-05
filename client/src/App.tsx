@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus } from 'lucide-react';
 
 import { initDB } from '@/lib/db';
-import { addSeedData } from '@/lib/seedData';
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { getCurrentMonth, formatMonthYear } from '@/lib/date';
 
@@ -22,6 +21,7 @@ import ExpensesPie from '@/components/Charts/ExpensesPie';
 import BalanceLine from '@/components/Charts/BalanceLine';
 import InstallPrompt from '@/components/InstallPrompt';
 import FileTransfer from '@/components/FileTransfer';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 function FinanceApp() {
   const { toast } = useToast();
@@ -49,7 +49,25 @@ function FinanceApp() {
   useEffect(() => {
     const init = async () => {
       await initDB();
-      await addSeedData();
+      
+      const db = await import('@/lib/db').then(m => m.getDB());
+      const dbInstance = await db;
+      
+      const allTransactions = await dbInstance.getAll('transactions');
+      const seedTransactions = allTransactions.filter(t => t.id.startsWith('seed-'));
+      
+      if (seedTransactions.length > 0) {
+        const tx = dbInstance.transaction('transactions', 'readwrite');
+        for (const transaction of seedTransactions) {
+          await tx.store.delete(transaction.id);
+        }
+        await tx.done;
+        
+        const budgetTx = dbInstance.transaction('budgets', 'readwrite');
+        await budgetTx.store.clear();
+        await budgetTx.done;
+      }
+      
       await loadCategories();
       await loadTransactions();
       await loadBudgets();
@@ -192,27 +210,29 @@ function FinanceApp() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2 sm:gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">Seu Finanças</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-semibold">calcula.Ai</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {formatMonthYear(filters.month)}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <FileTransfer onExport={exportData} onImport={handleImport} />
             <Button onClick={() => setShowBudgets(!showBudgets)} variant="outline" size="sm" data-testid="button-budgets">
-              Orçamentos
+              <span className="hidden sm:inline">Orçamentos</span>
+              <span className="sm:hidden">$</span>
             </Button>
             <Button onClick={() => setShowTransactionForm(true)} size="sm" data-testid="button-new-transaction">
-              <Plus className="w-4 h-4 mr-2" />
-              Nova
+              <Plus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Nova</span>
             </Button>
+            <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         <DashboardCards income={stats.income} expense={stats.expense} balance={stats.balance} />
 
         <Filters

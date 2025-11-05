@@ -1,6 +1,6 @@
 import { openDB, type IDBPDatabase } from 'idb';
 
-const DB_NAME = 'seu_financas';
+const DB_NAME = 'calcula_ai';
 const DB_VERSION = 1;
 
 export interface Transaction {
