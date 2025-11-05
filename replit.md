@@ -8,13 +8,17 @@ The application is designed as a fully offline-capable PWA that can be installed
 
 ## Recent Changes
 
-**November 5, 2025 - Initial Replit Setup**
+**November 5, 2025 - Configured for Hostinger Deployment**
 - Successfully imported project from GitHub
 - Installed all npm dependencies (741 packages)
 - Configured development workflow to run on port 5000
-- Set up deployment configuration for autoscale deployment
+- **Prepared for static hosting on Hostinger**:
+  - Created production build in `dist/public/` directory
+  - Added `.htaccess` file for Apache/SPA routing
+  - Created detailed setup guide in `HOSTINGER_SETUP.md`
+- Set up deployment configuration for Replit autoscale (optional)
 - Verified frontend is working correctly with Brazilian Portuguese localization
-- Note: PostgreSQL database not provisioned as app primarily uses IndexedDB for client-side storage
+- Note: Application is 100% client-side (IndexedDB), no backend API needed
 
 ## User Preferences
 
@@ -121,13 +125,25 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 
 **Server Setup:**
-- Express.js server for development and production serving
+- Express.js server for development and production serving (Replit only)
 - Vite integration in development mode with HMR (Hot Module Replacement)
 - Static file serving for production builds
 - Middleware for JSON parsing and request logging
 
+**Hosting Options:**
+1. **Static Hosting (Hostinger, Vercel, Netlify)**:
+   - Application is 100% client-side, no backend needed
+   - All files in `dist/public/` can be hosted on any static host
+   - Includes `.htaccess` for Apache servers (Hostinger)
+   - See `HOSTINGER_SETUP.md` for detailed instructions
+
+2. **Replit Deployment**:
+   - Express server serves static files from `dist/public/`
+   - Autoscale deployment configured
+   - No API endpoints required (application is client-only)
+
 **Database Schema (Drizzle + PostgreSQL):**
-- Note: The application currently uses IndexedDB for client-side storage. Drizzle configuration exists but is not actively used in the current implementation.
+- Note: The application uses IndexedDB for client-side storage. Drizzle configuration exists but is not actively used.
 - Schema includes a basic `users` table with username/password fields
 - PostgreSQL dialect configured via `@neondatabase/serverless`
 - Migration output directory: `./migrations`
@@ -135,7 +151,7 @@ Preferred communication style: Simple, everyday language.
 **Storage Interface:**
 - Abstract `IStorage` interface for potential backend data operations
 - `MemStorage` implementation using in-memory Map for user data
-- Methods for user creation and retrieval (currently unused in favor of client-side storage)
+- Currently unused - application relies entirely on client-side IndexedDB storage
 
 ### Build & Development
 

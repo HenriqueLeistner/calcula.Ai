@@ -1,0 +1,46 @@
+═══════════════════════════════════════════════════════════════
+  COMO HOSPEDAR NA HOSTINGER - GUIA RÁPIDO
+═══════════════════════════════════════════════════════════════
+
+✅ Sua aplicação está PRONTA para a Hostinger!
+
+📦 ARQUIVOS PARA ENVIAR:
+   → Envie TUDO que está dentro de: dist/public/
+   
+   Você vai encontrar:
+   - index.html
+   - .htaccess (importante!)
+   - pasta assets/
+   - manifest.json
+   - offline.html
+   - favicon.png
+   - pasta icons/
+
+🚀 ONDE ENVIAR:
+   1. Entre no hPanel da Hostinger
+   2. Vá em "Gerenciador de Arquivos"
+   3. Entre na pasta: public_html/
+   4. Faça upload de TODOS os arquivos de dist/public/
+
+🔒 IMPORTANTE - ATIVE SSL/HTTPS:
+   PWA só funciona com HTTPS!
+   → No hPanel: SSL/TLS → Ativar SSL Grátis
+   → Marcar "Forçar HTTPS"
+
+✨ PRONTO!
+   Acesse: https://seudominio.com
+   
+   - O app vai carregar
+   - Usuários podem instalar no celular/desktop
+   - Funciona 100% offline
+   - Todos os dados ficam salvos no navegador
+
+═══════════════════════════════════════════════════════════════
+📖 GUIA COMPLETO: Leia HOSTINGER_SETUP.md
+═══════════════════════════════════════════════════════════════
+
+OBSERVAÇÕES:
+✓ Não precisa de Node.js na Hostinger
+✓ Não precisa de banco de dados MySQL
+✓ Funciona em qualquer plano de hospedagem compartilhada
+✓ Os dados são salvos no navegador de cada usuário
