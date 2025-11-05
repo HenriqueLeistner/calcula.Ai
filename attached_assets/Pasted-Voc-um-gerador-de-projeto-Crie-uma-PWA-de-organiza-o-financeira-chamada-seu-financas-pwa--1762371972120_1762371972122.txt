@@ -1,0 +1,126 @@
+Você é um gerador de projeto. Crie uma PWA de organização financeira chamada "seu-financas-pwa".
+
+STACK & LIBS
+- Vite + React + TypeScript
+- TailwindCSS + shadcn/ui + lucide-react
+- Recharts (gráficos) — usar cores padrão (não fixar cores)
+- IndexedDB via "idb" (persistência offline robusta)
+- Zustand (store global simples)
+- vite-plugin-pwa (manifest + service worker + cache strategies)
+- ESLint + Prettier
+
+REQUISITOS PWA (OBRIGATÓRIO)
+- Manifest completo: name, short_name, description (pt-BR), start_url="/", scope="/", display="standalone", background_color e theme_color, orientation="portrait", lang="pt-BR", categories ["finance","productivity"], shortcuts (ex.: "Nova transação" -> "/add").
+- Ícones: gerar /public/icons em múltiplas dimensões (192, 256, 384, 512) + maskable.
+- Service Worker com vite-plugin-pwa (workbox):
+  - Estrategias de cache:
+    - HTML shell (App Shell) com NetworkFirst com fallback offline.
+    - Static assets (js/css/fonts) com StaleWhileRevalidate.
+    - Imagens e ícones com CacheFirst (máx 30 dias).
+  - Página de fallback offline: /offline.html.
+- Prompt de instalação (beforeinstallprompt) e botão “Instalar app” na UI.
+- Passar audit de Lighthouse PWA (instalável, offline OK, manifest válido).
+
+FUNCIONALIDADES
+- CRUD de transações (IndexedDB):
+  { id (uuid), type: "income"|"expense", date (ISO), category, description, amount:number }
+- CRUD de categorias (income e expense).
+- Orçamentos por categoria de despesa (limite mensal) com barra de progresso e alertas 80%/100%.
+- Filtros: por mês (YYYY-MM), tipo, categoria, busca textual.
+- Dashboard mês atual:
+  - Cards: Receitas, Despesas, Saldo.
+  - Gráficos: Pizza (despesas por categoria) e Linha (saldo acumulado no mês).
+- Importar/Exportar JSON (todas as tabelas) para backup.
+- i18n BRL (pt-BR) e datas dd/mm/yyyy.
+- Modo compacto de linhas.
+- Estado de UI e filtros persistidos em localStorage.
+
+ARQUITETURA / PASTAS
+- /public
+  - offline.html
+  - icons/* (png + maskable)
+- /src
+  - main.tsx, App.tsx, index.css
+  - lib/
+    - db.ts (IndexedDB usando idb, stores: transactions, categories, budgets, meta)
+    - currency.ts (formatos BRL)
+    - date.ts (helpers para mês atual, formatação)
+  - store/
+    - useFinanceStore.ts (Zustand: transações, categorias, budgets, filtros, ações assíncronas para IndexedDB)
+  - components/
+    - DashboardCards.tsx
+    - TransactionForm.tsx
+    - Filters.tsx
+    - BudgetPanel.tsx
+    - Charts/ExpensesPie.tsx
+    - Charts/BalanceLine.tsx
+    - TransactionsTable.tsx
+    - InstallPrompt.tsx (UI para instalar PWA)
+    - FileTransfer.tsx (import/export JSON)
+  - pwa/
+    - sw-claims.ts (setup do vite-plugin-pwa para auto update + claim clients)
+  - routes/ (opcional com react-router) — pode manter tudo em App.tsx se preferir.
+- tailwind.config.ts com preset do shadcn/ui e tema.
+- vite.config.ts com vite-plugin-pwa configurado.
+
+DETALHES DE IMPLEMENTAÇÃO
+- IndexedDB (idb): criar db "seu_financas" v1 com objectStores:
+  - "transactions" (keyPath "id", index por "date" e "type")
+  - "categories" (keyPath "id"; seed com padrão income: [Salário, Freelance, Investimentos], expense: [Casa, Mercado, Lazer, Saúde, Transporte, Educação])
+  - "budgets" (keyPath "id" — id da categoria expense; limit:number)
+  - "meta" (keyValue) para configs/migrações
+- Ações assíncronas no store: add/edit/delete/list com paginação por mês (consulta por prefixo YYYY-MM da data).
+- Cálculos:
+  - sums: income, expense, balance do mês filtrado.
+  - byCategory: somatório por categoria (separar income/expense).
+  - balanceCurve: ordena por data, saldo acumulado.
+  - budgetsStatus: { name, limit, spent, restante, pct } com classes de cor: <80% verde, >=80% âmbar, >=100% vermelho.
+- UI:
+  - Header com nome do app, botões Exportar/Importar e Instalar.
+  - Cards: Receitas/Despesas/Saldo (valores com BRL.format).
+  - Form de transação: type toggle, date, category (filtrada por type), description, amount decimal ("," aceito -> converter).
+  - Filters: mês (select dinâmico a partir dos dados + mês atual), tipo, categoria, busca.
+  - Tabela/lista de transações: responsiva, com remover/editar.
+  - BudgetPanel: editor de orçamentos (adicionar/remover/salvar).
+  - Charts: usar Recharts com defaults (não fixar cores).
+- Acessibilidade: labels, aria, foco nos diálogos.
+- Responsividade mobile-first.
+
+PWA (vite-plugin-pwa) — CONFIG:
+- Registrar no vite.config.ts:
+  import { VitePWA } from 'vite-plugin-pwa'
+  PWA com:
+    registerType: 'autoUpdate',
+    includeAssets: ['icons/*.png'],
+    manifest: { ...conforme requisitos acima... },
+    workbox: {
+      navigateFallback: '/offline.html',
+      runtimeCaching: [
+        { urlPattern: ({request}) => request.destination === 'document', handler: 'NetworkFirst' },
+        { urlPattern: ({request}) => ['script','style','font'].includes(request.destination), handler: 'StaleWhileRevalidate' },
+        { urlPattern: ({request}) => request.destination === 'image', handler: 'CacheFirst', options:{ cacheName:'images', expiration:{ maxEntries:60, maxAgeSeconds:2592000 } } }
+      ]
+    }
+
+COMANDOS
+- Gerar projeto, instalar dependências e configurar tudo.
+- Adicionar scripts no package.json:
+  "dev": "vite",
+  "build": "tsc -b && vite build",
+  "preview": "vite preview"
+- Fornecer README com:
+  1) Como rodar (npm i, npm run dev)
+  2) Como instalar no dispositivo (Add to Home Screen)
+  3) Como testar offline (abrir, desativar rede, recarregar)
+  4) Como exportar/importar dados
+
+ACEITAÇÃO / TESTES
+- Rodar local, instalar no dispositivo (display standalone).
+- Funciona offline: posso abrir, ver dados (seed), criar transação e ela persiste.
+- Lighthouse PWA: “Installable” e “Works offline” ✅
+- Gráficos renderizam sem erros e sem cores fixas.
+- Dados de exemplo (seed) para testar rápido.
+
+ENTREGA
+- Gere todos os arquivos com conteúdo completo (código pronto).
+- Se faltar espaço, continue a resposta até concluir TUDO.
