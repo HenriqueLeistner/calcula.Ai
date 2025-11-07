@@ -377,9 +377,7 @@ function FinanceApp() {
             )}
           </div>
         ) : (
-          <div className="h-full">
-            <ChatPage />
-          </div>
+          <ChatPage />
         )}
       </main>
 
