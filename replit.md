@@ -8,17 +8,28 @@ The application is designed as a fully offline-capable PWA that can be installed
 
 ## Recent Changes
 
+**November 7, 2025 - Replit Environment Setup Complete**
+- Fresh GitHub import successfully configured for Replit
+- Installed all npm dependencies (741 packages)
+- Configured development workflow (`dev-server`) to run on port 5000 with webview output
+- Vite development server configured with:
+  - Host: 0.0.0.0 (required for Replit)
+  - Port: 5000 (frontend)
+  - allowedHosts: true (to work with Replit's proxy/iframe)
+- Express backend server configured for development HMR and production static serving
+- Set up deployment configuration for Replit autoscale:
+  - Build: `npm run build`
+  - Run: `npm start`
+- Verified frontend is working correctly with Brazilian Portuguese localization
+- All TypeScript LSP errors resolved
+- Note: Application is 100% client-side (IndexedDB), no backend API needed. Express server only serves static files.
+
 **November 5, 2025 - Configured for Hostinger Deployment**
 - Successfully imported project from GitHub
-- Installed all npm dependencies (741 packages)
-- Configured development workflow to run on port 5000
 - **Prepared for static hosting on Hostinger**:
   - Created production build in `dist/public/` directory
   - Added `.htaccess` file for Apache/SPA routing
   - Created detailed setup guide in `HOSTINGER_SETUP.md`
-- Set up deployment configuration for Replit autoscale (optional)
-- Verified frontend is working correctly with Brazilian Portuguese localization
-- Note: Application is 100% client-side (IndexedDB), no backend API needed
 
 ## User Preferences
 
