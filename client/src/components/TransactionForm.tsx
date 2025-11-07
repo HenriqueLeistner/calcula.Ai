@@ -20,7 +20,12 @@ interface TransactionFormProps {
 
 export default function TransactionForm({ categories, onSubmit, onCancel }: TransactionFormProps) {
   const [type, setType] = useState<'income' | 'expense'>('expense');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => {
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    console.log('📅 Data padrão do formulário:', dateStr);
+    return dateStr;
+  });
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');

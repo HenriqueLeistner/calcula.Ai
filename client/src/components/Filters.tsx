@@ -37,11 +37,12 @@ export default function Filters({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       <div className="space-y-2">
-        <Select value={selectedMonth} onValueChange={onMonthChange}>
+        <Select value={selectedMonth || 'all'} onValueChange={(v) => onMonthChange(v === 'all' ? '' : v)}>
           <SelectTrigger data-testid="select-month">
-            <SelectValue placeholder="Mês" />
+            <SelectValue placeholder="Selecione o mês" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="all">Todos os meses</SelectItem>
             {availableMonths.map((month) => (
               <SelectItem key={month} value={month}>
                 {new Date(month + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}

@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { useToast } from '@/hooks/use-toast';
+import { formatDate } from '@/lib/date';
 
 interface ParsedTransaction {
   amount: number;
@@ -21,7 +22,10 @@ function parseNaturalInput(input: string, categories: Array<{ id: string; name: 
   
   const amount = parseFloat(amountMatch[1].replace(',', '.'));
   
-  let date = new Date().toISOString().split('T')[0];
+  // Usar data de hoje sem problemas de timezone
+  const today = new Date();
+  let date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
   const dateMatch = text.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if (dateMatch) {
     const [_, day, month, year] = dateMatch;
@@ -90,7 +94,7 @@ export function ChatPage() {
       }).format(parsed.amount);
       
       setMessages(prev => [...prev, { 
-        text: `✅ Transação adicionada: ${formattedAmount} em ${categoryName} para ${new Date(parsed.date).toLocaleDateString('pt-BR')}`, 
+        text: `✅ Transação adicionada: ${formattedAmount} em ${categoryName} para ${formatDate(parsed.date)}`, 
         isUser: false 
       }]);
 

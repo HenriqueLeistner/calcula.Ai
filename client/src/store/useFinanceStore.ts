@@ -36,8 +36,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
   categories: [],
   budgets: [],
   filters: {
-    month: getCurrentMonth(),
-    type: 'all',
+    month: '', // Sem mês selecionado por padrão
+    type: 'all' as const,
     category: '',
     search: '',
   },
@@ -47,7 +47,6 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     set((state) => ({
       filters: { ...state.filters, ...newFilters },
     }));
-    localStorage.setItem('finance-filters', JSON.stringify(get().filters));
   },
 
   loadTransactions: async () => {
@@ -74,8 +73,10 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
   },
 
   addTransaction: async (transaction) => {
+    console.log('💾 Salvando transação:', transaction);
     const db = await getDB();
     const newTransaction = { ...transaction, id: v4() };
+    console.log('💾 Transação com ID:', newTransaction);
     await db.add('transactions', newTransaction);
     await get().loadTransactions();
   },

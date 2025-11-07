@@ -6,7 +6,12 @@ export function getCurrentMonth(): string {
 }
 
 export function formatDate(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  if (typeof date === 'string') {
+    // Parse ISO date string (YYYY-MM-DD) directly to avoid timezone issues
+    const [year, month, day] = date.split('T')[0].split('-');
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+  }
+  const d = date;
   const day = String(d.getDate()).padStart(2, '0');
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const year = d.getFullYear();

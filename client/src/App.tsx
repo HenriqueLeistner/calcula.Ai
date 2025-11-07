@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,7 +6,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Plus, Menu, Download, Upload, DollarSign } from 'lucide-react';
 
 import { initDB } from '@/lib/db';
 import { useFinanceStore } from '@/store/useFinanceStore';
@@ -31,6 +38,7 @@ function FinanceApp() {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showBudgets, setShowBudgets] = useState(false);
   const [currentTab, setCurrentTab] = useState<'home' | 'chat'>('home');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     transactions,
@@ -52,6 +60,9 @@ function FinanceApp() {
 
   useEffect(() => {
     const init = async () => {
+      // Limpar filtros antigos do localStorage
+      localStorage.removeItem('finance-filters');
+      
       await initDB();
       
       const db = await import('@/lib/db').then(m => m.getDB());
@@ -81,11 +92,14 @@ function FinanceApp() {
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
-      const [year, month] = filters.month.split('-');
-      const tDate = new Date(t.date);
-      const tMonth = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+      // Se tiver mês selecionado, filtra por ele
+      if (filters.month) {
+        const [year, month] = filters.month.split('-');
+        const tDate = new Date(t.date);
+        const tMonth = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+        if (tMonth !== filters.month) return false;
+      }
       
-      if (tMonth !== filters.month) return false;
       if (filters.type !== 'all' && t.type !== filters.type) return false;
       if (filters.category && t.category !== filters.category) return false;
       if (filters.search && !t.description.toLowerCase().includes(filters.search.toLowerCase())) return false;
@@ -211,32 +225,105 @@ function FinanceApp() {
     }
   };
 
+  const handleExportClick = async () => {
+    try {
+      const data = await exportData();
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `seu-financas-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast({
+        title: "Dados exportados",
+        description: "Os dados foram exportados com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao exportar",
+        description: "Não foi possível exportar os dados.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      await handleImport(text);
+    } catch (error) {
+      // Error already handled in handleImport
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="border-b bg-card sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">calcula.Ai</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {currentTab === 'home' ? formatMonthYear(filters.month) : 'Chat Financeiro'}
+            <h1 className="text-lg sm:text-xl font-semibold">calcula.Ai</h1>
+            <p className="text-xs text-muted-foreground">
+              {currentTab === 'home' 
+                ? (filters.month ? formatMonthYear(filters.month) : 'Todos os meses')
+                : 'Chat Financeiro'}
             </p>
           </div>
           {currentTab === 'home' && (
             <div className="flex items-center gap-2">
-              <FileTransfer onExport={exportData} onImport={handleImport} />
-              <Button onClick={() => setShowBudgets(!showBudgets)} variant="outline" size="sm" data-testid="button-budgets">
-                <span className="hidden sm:inline">Orçamentos</span>
-                <span className="sm:hidden">$</span>
-              </Button>
-              <Button onClick={() => setShowTransactionForm(true)} size="sm" data-testid="button-new-transaction">
-                <Plus className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Nova</span>
-              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleFileChange}
+                className="hidden"
+              />
               <ThemeToggle />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Menu className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setShowTransactionForm(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nova Transação
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowBudgets(!showBudgets)}>
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Orçamentos
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleExportClick}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar Dados
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleImportClick}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Importar Dados
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
           {currentTab === 'chat' && (
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
           )}
         </div>
       </header>
