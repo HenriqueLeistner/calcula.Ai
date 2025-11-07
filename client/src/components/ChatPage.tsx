@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, MessageSquare } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -14,7 +14,11 @@ interface ParsedTransaction {
   type: 'income' | 'expense';
 }
 
-function parseNaturalInput(input: string, categories: Array<{ id: string; name: string; type: 'income' | 'expense' }>): ParsedTransaction | null {
+function parseNaturalInput(
+  input: string, 
+  categories: Array<{ id: string; name: string; type: 'income' | 'expense' }>,
+  selectedType: 'income' | 'expense'
+): ParsedTransaction | null {
   const text = input.toLowerCase().trim();
   
   const amountMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:reais?|r\$|real)?/);
@@ -32,13 +36,15 @@ function parseNaturalInput(input: string, categories: Array<{ id: string; name: 
     date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
   
-  let foundCategory = categories.find(cat => 
+  // Filtrar categorias pelo tipo selecionado
+  const categoriesOfType = categories.filter(c => c.type === selectedType);
+  
+  let foundCategory = categoriesOfType.find(cat => 
     text.includes(cat.name.toLowerCase())
   );
   
   if (!foundCategory) {
-    const expenseCategories = categories.filter(c => c.type === 'expense');
-    foundCategory = expenseCategories[0];
+    foundCategory = categoriesOfType[0];
   }
   
   const words = text.split(/[,\s]+/).filter(w => 
@@ -57,24 +63,35 @@ function parseNaturalInput(input: string, categories: Array<{ id: string; name: 
     category: foundCategory!.id,
     date,
     description: description.charAt(0).toUpperCase() + description.slice(1),
-    type: foundCategory!.type,
+    type: selectedType,
   };
 }
 
 export function ChatPage() {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>>([]);
+  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense');
+  const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean }>>(() => {
+    // Carregar mensagens salvas do sessionStorage ao iniciar
+    const saved = sessionStorage.getItem('chat-messages');
+    return saved ? JSON.parse(saved) : [];
+  });
   const { categories, addTransaction } = useFinanceStore();
   const { toast } = useToast();
+
+  // Salvar mensagens no sessionStorage sempre que mudarem
+  useEffect(() => {
+    sessionStorage.setItem('chat-messages', JSON.stringify(messages));
+  }, [messages]);
 
   const handleSubmit = async () => {
     if (!input.trim()) return;
 
     const userMessage = input.trim();
-    setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
+    const typeLabel = transactionType === 'income' ? '💰 Receita' : '💸 Despesa';
+    setMessages(prev => [...prev, { text: `${typeLabel}: ${userMessage}`, isUser: true }]);
     setInput('');
 
-    const parsed = parseNaturalInput(userMessage, categories);
+    const parsed = parseNaturalInput(userMessage, categories, transactionType);
 
     if (!parsed) {
       setMessages(prev => [...prev, { 
@@ -94,7 +111,7 @@ export function ChatPage() {
       }).format(parsed.amount);
       
       setMessages(prev => [...prev, { 
-        text: `✅ Transação adicionada: ${formattedAmount} em ${categoryName} para ${formatDate(parsed.date)}`, 
+        text: `✅ ${transactionType === 'income' ? 'Receita' : 'Despesa'} adicionada: ${formattedAmount} em ${categoryName} para ${formatDate(parsed.date)}`, 
         isUser: false 
       }]);
 
@@ -111,8 +128,8 @@ export function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+    <div className="flex flex-col h-full max-h-screen">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-4">
         {messages.length === 0 && (
           <div className="text-sm text-muted-foreground text-center py-12">
             <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -141,7 +158,26 @@ export function ChatPage() {
         ))}
       </div>
 
-      <div className="p-4 border-t bg-card">
+      <div className="flex-shrink-0 p-4 border-t bg-card space-y-3 mb-16">
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={transactionType === 'income' ? 'default' : 'outline'}
+            className="flex-1"
+            onClick={() => setTransactionType('income')}
+          >
+            💰 Receita
+          </Button>
+          <Button
+            type="button"
+            variant={transactionType === 'expense' ? 'default' : 'outline'}
+            className="flex-1"
+            onClick={() => setTransactionType('expense')}
+          >
+            💸 Despesa
+          </Button>
+        </div>
+        
         <div className="flex gap-2">
           <Input
             value={input}

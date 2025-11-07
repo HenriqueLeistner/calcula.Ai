@@ -2,6 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search } from 'lucide-react';
 import type { Category } from '@/lib/db';
+import { formatMonthYear } from '@/lib/date';
 
 interface FiltersProps {
   availableMonths: string[];
@@ -45,7 +46,7 @@ export default function Filters({
             <SelectItem value="all">Todos os meses</SelectItem>
             {availableMonths.map((month) => (
               <SelectItem key={month} value={month}>
-                {new Date(month + '-01').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                {formatMonthYear(month)}
               </SelectItem>
             ))}
           </SelectContent>

@@ -94,9 +94,8 @@ function FinanceApp() {
     return transactions.filter(t => {
       // Se tiver mês selecionado, filtra por ele
       if (filters.month) {
-        const [year, month] = filters.month.split('-');
-        const tDate = new Date(t.date);
-        const tMonth = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
+        // Parse da data sem timezone: extrai YYYY-MM diretamente da string
+        const tMonth = t.date.substring(0, 7); // "2025-11-07" -> "2025-11"
         if (tMonth !== filters.month) return false;
       }
       
@@ -139,7 +138,7 @@ function FinanceApp() {
 
   const balanceData = useMemo(() => {
     const sorted = [...filteredTransactions].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+      a.date.localeCompare(b.date) // Comparação de strings ISO já ordena corretamente
     );
 
     let accumulated = 0;
@@ -150,9 +149,10 @@ function FinanceApp() {
         accumulated -= t.amount;
       }
       
-      const date = new Date(t.date);
+      // Parse da data sem timezone: extrai dia/mês diretamente da string
+      const [year, month, day] = t.date.split('-');
       return {
-        date: `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`,
+        date: `${day}/${month}`,
         balance: accumulated,
       };
     });
@@ -165,8 +165,8 @@ function FinanceApp() {
     months.add(getCurrentMonth());
     
     transactions.forEach(t => {
-      const date = new Date(t.date);
-      const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      // Parse da data sem timezone: extrai YYYY-MM diretamente da string
+      const month = t.date.substring(0, 7); // "2025-11-07" -> "2025-11"
       months.add(month);
     });
     
@@ -377,7 +377,7 @@ function FinanceApp() {
             )}
           </div>
         ) : (
-          <div className="h-full pb-16">
+          <div className="h-full">
             <ChatPage />
           </div>
         )}
