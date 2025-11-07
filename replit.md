@@ -8,6 +8,31 @@ The application is designed as a fully offline-capable PWA that can be installed
 
 ## Recent Changes
 
+**November 7, 2025 - Added Transaction Type Selection in Chat**
+- Added buttons to select between "Receita" (income) and "Despesa" (expense) in chat
+- Default selection is "Despesa" (expense)
+- User can toggle between types before sending message
+- Chat now filters categories based on selected type
+- Messages show type emoji (💰 for income, 💸 for expense)
+
+**November 7, 2025 - Added Chat Message Persistence**
+- Chat messages now persist while the app is open (sessionStorage)
+- Messages are saved automatically as you chat
+- History is restored when switching back to chat tab
+- Messages are cleared when closing the browser/tab (sessionStorage behavior)
+- No manual action needed - works automatically
+
+**November 7, 2025 - Fixed Timezone Bug in Month Filters**
+- Fixed critical bug where transactions were appearing in wrong months
+- Problem: Using `new Date()` for date parsing caused timezone offset issues (UTC to local time)
+- Solution: Parse dates directly from ISO string format (YYYY-MM-DD) without creating Date objects
+- Affected areas fixed:
+  - Transaction month filtering (`filteredTransactions`)
+  - Available months list (`availableMonths`)  
+  - Month name display in filters (`Filters.tsx`)
+  - Balance chart data points (`balanceData`)
+- All date parsing now uses string manipulation (`.substring()`, `.split()`) to avoid timezone conversion
+
 **November 7, 2025 - Replit Environment Setup Complete**
 - Fresh GitHub import successfully configured for Replit
 - Installed all npm dependencies (741 packages)
