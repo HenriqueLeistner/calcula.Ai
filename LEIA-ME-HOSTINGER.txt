@@ -1,20 +1,20 @@
 ═══════════════════════════════════════════════════════════════
-  COMO HOSPEDAR NA HOSTINGER - GUIA RÁPIDO
+  COMO HOSPEDAR O CALCULA.AI NA HOSTINGER - GUIA RÁPIDO
 ═══════════════════════════════════════════════════════════════
 
-✅ Sua aplicação está PRONTA para a Hostinger!
+✅ Sua aplicação PWA está PRONTA para a Hostinger!
 
 📦 ARQUIVOS PARA ENVIAR:
    → Envie TUDO que está dentro de: dist/public/
    
    Você vai encontrar:
-   - index.html
-   - .htaccess (importante!)
-   - pasta assets/
-   - manifest.json
-   - offline.html
+   - index.html (aplicação principal)
+   - .htaccess (IMPORTANTE - roteamento SPA)
+   - pasta assets/ (CSS e JavaScript otimizados)
+   - manifest.json (configuração PWA)
+   - offline.html (página offline)
    - favicon.png
-   - pasta icons/
+   - pasta icons/ (ícones do PWA em vários tamanhos)
 
 🚀 ONDE ENVIAR:
    1. Entre no hPanel da Hostinger
@@ -30,10 +30,12 @@
 ✨ PRONTO!
    Acesse: https://seudominio.com
    
-   - O app vai carregar
+   - O app vai carregar com a tela inicial
+   - Chat financeiro para adicionar transações facilmente
+   - Dashboard com gráficos de despesas e saldo
    - Usuários podem instalar no celular/desktop
-   - Funciona 100% offline
-   - Todos os dados ficam salvos no navegador
+   - Funciona 100% offline após primeira visita
+   - Todos os dados ficam salvos localmente no navegador
 
 ═══════════════════════════════════════════════════════════════
 📖 GUIA COMPLETO: Leia HOSTINGER_SETUP.md

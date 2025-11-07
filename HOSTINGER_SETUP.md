@@ -1,4 +1,4 @@
-# Como Hospedar na Hostinger
+# Como Hospedar o calcula.Ai na Hostinger
 
 ## 📦 O que você precisa enviar
 
@@ -8,13 +8,17 @@ Os arquivos necessários são:
 ```
 dist/public/
 ├── index.html
-├── .htaccess (criado automaticamente)
+├── .htaccess (para roteamento SPA)
 ├── assets/
 │   ├── index-xxxxx.css
 │   └── index-xxxxx.js
-├── manifest.webmanifest
-└── (outros arquivos estáticos)
+├── manifest.json
+├── offline.html
+├── favicon.png
+└── icons/ (ícones do PWA em vários tamanhos)
 ```
+
+**IMPORTANTE:** O arquivo `.htaccess` já está incluído no build. Ele é necessário para o roteamento funcionar corretamente no Apache.
 
 ## 🚀 Passo a Passo
 
@@ -99,7 +103,25 @@ Depois de hospedar:
 
 ## 🔄 Para Atualizar o Site
 
-1. Rode `npm run build` aqui no Replit
+1. Rode `npm run build` no seu ambiente de desenvolvimento (Replit ou local)
 2. Baixe o novo conteúdo de `dist/public/`
 3. Substitua os arquivos na Hostinger
 4. Os usuários precisarão recarregar para ver mudanças
+
+## ✨ Recursos da Aplicação
+
+- **Chat Financeiro**: Adicione transações por linguagem natural (ex: "50 reais mercado")
+- **Dashboard Interativo**: Visualize receitas, despesas e saldo
+- **Gráficos**: Pizza de despesas por categoria e linha de saldo acumulado
+- **Orçamentos**: Defina limites mensais por categoria
+- **Filtros**: Por mês, tipo, categoria e busca textual
+- **Exportar/Importar**: Backup completo em JSON
+- **PWA Offline**: Funciona sem internet após primeira visita
+- **Localização PT-BR**: Datas (dd/mm/yyyy) e valores (R$)
+
+## 🔧 Requisitos Técnicos
+
+- **Hospedagem**: Qualquer servidor Apache com mod_rewrite
+- **SSL/HTTPS**: Obrigatório para PWA funcionar
+- **Sem dependências de servidor**: 100% client-side (IndexedDB)
+- **Sem banco de dados externo**: Dados salvos no navegador do usuário
